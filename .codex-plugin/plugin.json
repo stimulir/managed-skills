@@ -1,0 +1,20 @@
+{
+  "name": "stimulir-managed-skills",
+  "version": "0.1.0",
+  "description": "Sandbox-managed AI capabilities for Stimulir workspaces.",
+  "repository": "https://github.com/stimulir/managed-skills",
+  "keywords": ["stimulir", "managed-skills", "sandbox", "research", "scraping", "simulation"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Stimulir Managed Skills",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Research this topic thoroughly and return a cited report",
+      "Scrape these public pages and return clean structured text",
+      "Build a sourced competitor brief for this company",
+      "Simulate how this described population might react to the scenario"
+    ]
+  }
+}
+

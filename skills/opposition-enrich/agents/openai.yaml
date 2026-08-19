@@ -1,0 +1,4 @@
+interface:
+  display_name: "Opposition Enrich"
+  short_description: "Build sourced competitor intelligence briefs"
+  default_prompt: "Use $opposition-enrich to build a sourced competitor brief for this company."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scenario Simulate"
+  short_description: "Simulate synthetic population reactions"
+  default_prompt: "Use $scenario-simulate to simulate how this described population might react to the scenario."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web Scrape"
+  short_description: "Extract clean structured text from web pages"
+  default_prompt: "Use $web-scrape to extract clean structured text from these public pages."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Creator Community Research"
+  short_description: "Evidence-backed creator community research"
+  default_prompt: "Use $creator-community-research to complete this research stage with cited evidence."

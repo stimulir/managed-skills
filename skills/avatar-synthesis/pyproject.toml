@@ -1,0 +1,6 @@
+[project]
+name = "avatar-synthesis"
+version = "0.1.0"
+description = "Synthesize narrow buyer hypotheses from collected vendor, search, ad and community evidence."
+requires-python = ">=3.11"
+dependencies = []

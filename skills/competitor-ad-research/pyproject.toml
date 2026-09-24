@@ -1,0 +1,6 @@
+[project]
+name = "competitor-ad-research"
+version = "0.1.0"
+description = "Analyse competitor ad creative, messaging and offers with traceable public evidence."
+requires-python = ">=3.11"
+dependencies = []

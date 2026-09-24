@@ -1,0 +1,4 @@
+interface:
+  display_name: "Experiment Feedback"
+  short_description: "Evidence-backed experiment feedback"
+  default_prompt: "Use $experiment-feedback to complete this research stage with cited evidence."

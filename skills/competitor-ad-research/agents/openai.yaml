@@ -1,0 +1,4 @@
+interface:
+  display_name: "Competitor Ad Research"
+  short_description: "Evidence-backed competitor ad research"
+  default_prompt: "Use $competitor-ad-research to complete this research stage with cited evidence."

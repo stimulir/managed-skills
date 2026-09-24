@@ -16,9 +16,25 @@ promotion workflows, use the separate
 | [`deep-research`](./skills/deep-research/) | Discover, fetch, and synthesize an evidence-backed report and CSV. | `SERPER_API_KEY` |
 | [`opposition-enrich`](./skills/opposition-enrich/) | Build a sourced competitor or opposition brief. | `SERPER_API_KEY` |
 | [`scenario-simulate`](./skills/scenario-simulate/) | Simulate reactions from a described synthetic population. | None beyond the Stimulir gateway key |
+| [`audience-research`](./skills/audience-research/) | Coordinate six evidence-backed audience research stages with budgeted collection and checkpoints. | `TREG_TOKEN` |
+| [`vendor-research`](./skills/vendor-research/) | Identify comparable vendors and buyer situations. | Via coordinator |
+| [`search-demand`](./skills/search-demand/) | Analyse search intent and buyer language. | Via coordinator |
+| [`competitor-ad-research`](./skills/competitor-ad-research/) | Analyse competitor creative, offers and landing pages. | Via coordinator |
+| [`creator-community-research`](./skills/creator-community-research/) | Map relevant creators, communities and recurring questions. | Via coordinator |
+| [`avatar-synthesis`](./skills/avatar-synthesis/) | Build testable buyer profiles from cited evidence. | None |
+| [`experiment-feedback`](./skills/experiment-feedback/) | Validate profiles against owned experiment outcomes. | Via coordinator or supplied outcomes |
 
 `scenario-simulate` is synthetic by construction. Its output must never be
 presented as observed population measurement.
+
+For the full audience workflow, explicitly select all seven audience packages.
+Deployed Compute agents receive only selected Vault bindings; bind the chosen
+workspace credential to `TREG_TOKEN`. Start with a zero budget and empty endpoint
+allowlist until live collection limits are supplied. Missing owned outcomes remain
+`needs_input`; competitor longevity is not proof of profitability. OpenSEO evidence
+may be imported, but these packages do not include an OpenSEO API adapter.
+
+Offline verification: `python3 -m unittest discover -s tests -v`.
 
 ## Import into a Stimulir workspace
 
@@ -77,4 +93,3 @@ managed-skills/
 
 Each skill owns its instructions, helper scripts, and Python dependencies.
 There is intentionally no repository-root Python environment.
-

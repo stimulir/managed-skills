@@ -1,0 +1,6 @@
+[project]
+name = "experiment-feedback"
+version = "0.1.0"
+description = "Join owned campaign and activation outcomes to avatar and creative hypotheses."
+requires-python = ">=3.11"
+dependencies = []

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Search Demand"
+  short_description: "Evidence-backed search demand"
+  default_prompt: "Use $search-demand to complete this research stage with cited evidence."

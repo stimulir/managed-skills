@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vendor Research"
+  short_description: "Evidence-backed vendor research"
+  default_prompt: "Use $vendor-research to complete this research stage with cited evidence."

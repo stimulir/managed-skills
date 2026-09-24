@@ -1,0 +1,4 @@
+interface:
+  display_name: "Avatar Synthesis"
+  short_description: "Evidence-backed avatar synthesis"
+  default_prompt: "Use $avatar-synthesis to complete this research stage with cited evidence."

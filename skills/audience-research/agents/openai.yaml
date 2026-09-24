@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audience Research"
+  short_description: "Evidence-backed audience research"
+  default_prompt: "Use $audience-research to complete this research stage with cited evidence."

@@ -1,0 +1,6 @@
+[project]
+name = "creator-community-research"
+version = "0.1.0"
+description = "Map creators and communities relevant to a proposed buyer and their recurring questions."
+requires-python = ">=3.11"
+dependencies = []

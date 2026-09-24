@@ -1,0 +1,6 @@
+[project]
+name = "vendor-research"
+version = "0.1.0"
+description = "Research comparable vendors and their customers to identify buyer roles and buying situations."
+requires-python = ">=3.11"
+dependencies = []

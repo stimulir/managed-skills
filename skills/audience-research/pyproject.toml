@@ -1,0 +1,6 @@
+[project]
+name = "audience-research"
+version = "0.1.0"
+description = "Coordinate evidence-backed audience and creative research through six checkpointed stages."
+requires-python = ">=3.11"
+dependencies = []

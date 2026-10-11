@@ -9,6 +9,8 @@ metadata:
 
 Collect positioning, product scope, pricing and customer case studies for vendors solving the same problem. Separate the quoted customer, actual buyer, user and inferred decision maker. A famous vendor is not evidence that its audience fits this product. Record whether success is a vendor claim, observed adoption or measured customer outcome; do not invent revenue, profitability or purchase decision makers. Return competing audience hypotheses and exclusions, with source URLs and retrieval timestamps.
 
+For comparisons, identify which company each sentence describes before attributing its features. A vendor describing its own managed team while contrasting freelance marketplaces does not establish that the compared marketplace is fully managed. Preserve commercial affiliation, and do not add qualifiers such as premium unless the cited passage actually supports them. Audit claim meaning against surrounding text, not only a matching phrase.
+
 ## Managed execution
 
 This package uses supplied evidence or tools explicitly attached to the deployment; it does not require a human CLI session. It works alone with the OpenSEO connector or supplied evidence. The full six-stage workflow requires `audience-research` and all six stage skills; selecting this skill never imports siblings automatically. Treg collection uses the coordinator's helper only when that package is installed and its endpoint/spend policy is supplied. Attaching OpenSEO does not require a Treg token or coordinator. Read raw provider responses before normalizing: HTTP success does not prove provider success.

@@ -23,6 +23,12 @@ Project context and saved keyword lists are supplied/cached material, not indepe
 
 Use discovered keyword research/metrics and SERP tools for search demand; ranked/domain keywords and search competitors can inform comparisons. Use the returned schema for market and language parameters rather than guessing them. Keep keyword volume, traffic estimates, CPC and difficulty separate; do not replace missing values with zero or treat a cached value as current. Organic keyword difficulty and paid competition measure different things; low difficulty and high paid competition are not inherently contradictory.
 
+## Retrieval provenance
+
+Keep upstream metric dates separate from when the response was observed. Resolve each OpenSEO response independently using `python3 helpers/retrieval.py /absolute/path/envelope.json`. The envelope contains `response`, `tool`, `tool_call_id` and, when captured by the host, `tool_receipt` with `provider: openseo`, the same `tool`/`tool_call_id`, and timezone-aware `received_at`. Copy the response's actual `retrieved_at` when present; otherwise a captured receipt for that exact call may supply the observation time, labelled `captured_tool_response_receipt`, with `provider_retrieved_at: null`. Preserve that basis alongside evidence and in report provenance; receipt time does not establish metric freshness.
+
+Never borrow another provider's timestamp, the project-context call's timestamp for keyword research, or the current/replay time. A replay preserves original response provenance. If both provider time and an original same-call receipt are unavailable, the helper returns unknown; explain the missing provenance and do not fabricate timestamped evidence. For such material, keep the raw export and mark the affected stage blocked until its observation provenance is supplied. Validate final evidence timestamps and provenance against the helper output after assembly, in addition to the structural evidence validator.
+
 ## Keyword attribution
 
 A seed requests suggestions; each returned row's metrics belong to that row's keyword. Keep the requested seed and returned keyword distinct in evidence and claims. Report seed volume only from a matching keyword row (ignoring case and surrounding whitespace), with an available volume for the requested market/language. Preserve provider estimates and any close-variant grouping limitations; a matching label does not prove independently measured exact-match demand. Missing rows or missing volumes mean unknown, not zero. A returned numeric zero remains a reported zero.

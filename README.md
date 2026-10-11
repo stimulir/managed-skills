@@ -16,9 +16,9 @@ promotion workflows, use the separate
 | [`deep-research`](./skills/deep-research/) | Discover, fetch, and synthesize an evidence-backed report and CSV. | `SERPER_API_KEY` |
 | [`opposition-enrich`](./skills/opposition-enrich/) | Build a sourced competitor or opposition brief. | `SERPER_API_KEY` |
 | [`scenario-simulate`](./skills/scenario-simulate/) | Simulate reactions from a described synthetic population. | None beyond the Stimulir gateway key |
-| [`audience-research`](./skills/audience-research/) | Coordinate six evidence-backed audience research stages with budgeted collection and checkpoints. | `TREG_TOKEN` |
-| [`vendor-research`](./skills/vendor-research/) | Identify comparable vendors and buyer situations. | Via coordinator |
-| [`search-demand`](./skills/search-demand/) | Analyse search intent and buyer language. | Via coordinator |
+| [`audience-research`](./skills/audience-research/) | Coordinate six evidence-backed audience research stages with budgeted collection and checkpoints. | `TREG_TOKEN` for Treg; attached OpenSEO connector optional |
+| [`vendor-research`](./skills/vendor-research/) | Identify comparable vendors and buyer situations. | OpenSEO connector, coordinator or supplied evidence |
+| [`search-demand`](./skills/search-demand/) | Analyse search intent and buyer language. | OpenSEO connector, coordinator or supplied evidence |
 | [`competitor-ad-research`](./skills/competitor-ad-research/) | Analyse competitor creative, offers and landing pages. | Via coordinator |
 | [`creator-community-research`](./skills/creator-community-research/) | Map relevant creators, communities and recurring questions. | Via coordinator |
 | [`avatar-synthesis`](./skills/avatar-synthesis/) | Build testable buyer profiles from cited evidence. | None |
@@ -28,11 +28,12 @@ promotion workflows, use the separate
 presented as observed population measurement.
 
 For the full audience workflow, explicitly select all seven audience packages.
-Deployed Compute agents receive only selected Vault bindings; bind the chosen
-workspace credential to `TREG_TOKEN`. Start with a zero budget and empty endpoint
-allowlist until live collection limits are supplied. Missing owned outcomes remain
-`needs_input`; competitor longevity is not proof of profitability. OpenSEO evidence
-may be imported, but these packages do not include an OpenSEO API adapter.
+Deployed Compute agents receive only selected Vault bindings. For Treg collection,
+bind its credential to `TREG_TOKEN` and use an explicit endpoint policy; start
+with a zero budget and empty allowlist until those limits are supplied. Missing owned outcomes remain
+`needs_input`; competitor longevity is not proof of profitability. Vendor/search stages
+also work alone with supplied evidence or the attached OpenSEO connector. These
+packages do not contain a direct OpenSEO API client.
 
 Offline verification: `python3 -m unittest discover -s tests -v`.
 
@@ -50,10 +51,35 @@ stimulir skills import stimulir/managed-skills \
   --ref main
 ```
 
-The sandbox installs each package from its own `pyproject.toml`. Research
-skills read `SERPER_API_KEY` from the workspace Vault. The platform currently
-makes the workspace Vault available to the sandbox as a whole, so skills must
-read only the variables they need and must never print secret values.
+The sandbox installs each package from its own `pyproject.toml`. Deployed Compute
+agents receive only their selected Vault bindings. Helpers such as Serper/Treg
+read the bound environment variable (`SERPER_API_KEY` / `TREG_TOKEN`); connector
+credentials stay on the backend. Never print credential values.
+
+### OpenSEO in Agent Builder
+
+Save an OpenSEO API key in the intended project's organization Vault, commonly
+as `OPENSEO_API_KEY`. Add the **OpenSEO** connector block in the new Agent Builder,
+verify the connection, select an OpenSEO project and grant the tools needed.
+Save and publish the new agent version. Do not add the same key as a sandbox
+credential. Quick Create/Edit carry the same connector grants.
+
+The runtime provides `openseo_tools` and `openseo_call`; skills supply the
+workflow and evidence rules. Call the catalog first, use its real schemas and
+omit `projectId` from call arguments because the host injects the pinned provider
+project. The Stimulir workspace ID is separate. Start with a context-only check;
+run keyword/SERP/domain research only when requested. The selected OpenSEO
+project must match the researched product. A Stimulir context is not LightReel
+research evidence. OpenSEO research can use account credits; the Treg helper's
+budget is separate.
+
+The Console backend and Agent OS runtime must include connector support; older
+runtimes and deployments without the block can still use supplied exports.
+Skills are imported at an immutable commit. Publishing this repository does
+not update existing imports or deployed versions: re-import/update the affected
+skills at the reviewed commit, then save and publish a new agent version.
+
+Reference: [OpenSEO MCP documentation](https://openseo.so/docs/mcp).
 
 ## Install in a coding agent
 
@@ -73,7 +99,8 @@ importer uses that category to distinguish sandbox capabilities from operator
 skills. A managed skill:
 
 - runs inside the workspace sandbox;
-- reads credentials only from its environment;
+- reads explicitly bound helper credentials from its environment or uses attached
+  host tools whose connector credentials remain server-side;
 - remains bounded and resumable when work exceeds one run;
 - writes outputs to the task's durable storage location;
 - never assumes a `~/.stimulir` human session.

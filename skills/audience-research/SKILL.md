@@ -56,6 +56,8 @@ For the competitor-ad stage, an attached AdRadar connector provides `adradar_col
 
 Follow each selected stage skill's contract. `helpers/evidence.py` validates a stage artifact. The coordinator will not overwrite a completed stage or accept avatar evidence changed from committed collection evidence. Reuse prior successful artifacts after restoring them; represent missing inputs as `blocked` and a genuine empty search as `no_data`.
 
+Export after collection and each successful checkpoint, including bounded raw receipts, so a supervisor can persist partial results before a sandbox ends. Do not wait for avatar drafting to export already collected evidence. An export with unfinished stages honestly remains `needs_input`; it is not a finished report.
+
 `export` writes `output.json` into `--run-dir` with `schema_version: 1`, `run_id`, `status: completed|needs_input`, `stages`, `evidence`, `avatars`, `missing_inputs`. It checks stored hashes before exporting. All six stages must be `complete` for `completed`; otherwise it honestly exports `needs_input`, keeping useful partial research. Never report the learning loop completed merely because a chat turn ended or an avatar draft exists. Include the concise recommendation, counterevidence and next missing input in the user report.
 
 Read [the artifact example](references/artifacts.md) for precise stage shapes. The local validators check structural consistency, not the factual truth of a quote or experiment ownership. Preserve raw provenance for reviewer verification.

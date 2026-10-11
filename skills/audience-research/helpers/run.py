@@ -182,7 +182,7 @@ def collect(root: Path, endpoint: str, query: dict, max_cost_micro: int) -> dict
         cost = headers.get('x-treg-cost-micro')
         if cost is None or not cost.isdigit() or int(cost) > max_cost_micro:
             raise ValueError('missing or unexpected cost receipt; reservation retained for reconciliation')
-        receipt = {'endpoint': endpoint, 'request_fingerprint': fingerprint, 'fetched_at': now(),
+        receipt = {'endpoint': endpoint, 'query': query, 'request_fingerprint': fingerprint, 'fetched_at': now(),
                    'call_id': headers.get('x-treg-call-id'), 'cost_micro_usd': int(cost),
                    'status': 'unvalidated', 'data': data}
         # These gateway freshness hints are separate from our response receipt
@@ -248,7 +248,9 @@ def export(root: Path, include_raw: bool = False) -> dict:
                 raw = json.loads(path.read_text())
                 if (not isinstance(raw, dict) or raw.get('request_fingerprint') != key
                         or raw.get('endpoint') != entry['endpoint']
-                        or raw.get('cost_micro_usd') != entry['cost_micro_usd']):
+                        or raw.get('cost_micro_usd') != entry['cost_micro_usd']
+                        or not isinstance(raw.get('query'), dict)
+                        or digest({'endpoint': raw['endpoint'], 'query': raw['query']}) != key):
                     raise ValueError('raw receipt identity differs from checkpoint')
                 saved_fingerprint = entry.get('raw_response_fingerprint')
                 if saved_fingerprint is None:

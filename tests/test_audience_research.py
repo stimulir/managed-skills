@@ -164,6 +164,7 @@ class RunTests(unittest.TestCase):
         embedded = next(iter(output['checkpoints']['raw_responses'].values()))
         self.assertEqual(embedded, receipt)
         self.assertEqual(embedded['data'], data)
+        self.assertEqual(embedded['query'], {'fetch': '{}'})
         self.assertEqual(embedded['fetched_at'], '2026-10-11T08:00:00+00:00')
         self.assertEqual(embedded['gateway_cache_headers'], {
             'x-treg-cache': 'hit', 'x-treg-fetched-at': '2026-10-10T08:00:00Z',
@@ -196,6 +197,13 @@ class RunTests(unittest.TestCase):
         path = self.root / state['calls'][key]['path']
         altered = copy.deepcopy(receipt); altered['endpoint'] = 'different.read'
         run.atomic_json(path, altered)
+        with self.assertRaisesRegex(ValueError, 'identity differs'):
+            run.export(self.root, include_raw=True)
+        altered = copy.deepcopy(receipt); altered['query'] = {'q': 'different public search'}
+        run.atomic_json(path, altered)
+        # Even updating the saved body hash cannot replace the request identity.
+        state['calls'][key]['raw_response_fingerprint'] = run.digest(altered)
+        run.atomic_json(self.root / 'run.json', state)
         with self.assertRaisesRegex(ValueError, 'identity differs'):
             run.export(self.root, include_raw=True)
         state['calls'][key]['path'] = 'artifacts/not-a-raw-receipt.json'

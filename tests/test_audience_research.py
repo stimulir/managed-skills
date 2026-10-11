@@ -228,6 +228,47 @@ class RunTests(unittest.TestCase):
         self.assertEqual(len(output['checkpoints']['stage_artifacts']), 6)
         self.assertEqual(output['missing_inputs'], [])
 
+    def test_adradar_checkpoint_preserves_unknowns_and_runtime_provenance(self):
+        row = artifact('competitor-ad-research')
+        observation = row['evidence'][0]
+        observation['source_url'] = 'https://www.facebook.com/ads/library/?id=123456789'
+        observation['provenance'] = {
+            'provider': 'adradar', 'tool': 'adradar_collect',
+            'cli_revision': '607341149061e7ac159407dabe01c9fa3c14ee61',
+            'adapter_version': '1', 'page_id': '987654321', 'country': 'GB',
+            'playwright_version': '1.61.0', 'bundle_sha256': 'a' * 64,
+            'request_arguments': {'page_id': '987654321', 'country': 'GB', 'max_scrolls': 3},
+            'artifact_uri': '/api/v1/compute/agents/connector-artifacts/00000000-0000-4000-8000-000000000001',
+            'snapshot_uri': '/api/v1/compute/agents/connector-artifacts/00000000-0000-4000-8000-000000000001?raw=true',
+            'first_seen': '2026-10-11T12:00:00+00:00',
+            'last_seen': '2026-10-11T12:00:00+00:00',
+            'publisher_start_date': None, 'impressions': None, 'roas': None,
+        }
+        run.commit(self.root, row)
+        exported = run.export(self.root)
+        stage = next(item for item in exported['stages'] if item['stage'] == 'competitor-ad-research')
+        persisted = json.loads((self.root / stage['artifact_path']).read_text())
+        self.assertEqual(persisted['evidence'][0], observation)
+        self.assertEqual(exported['evidence'], row['evidence'])
+        self.assertEqual(exported['status'], 'needs_input')
+
+    def test_avatar_cannot_change_adradar_snapshot_provenance(self):
+        row = artifact('competitor-ad-research')
+        row['evidence'][0]['provenance'] = {
+            'provider': 'adradar', 'tool': 'adradar_collect',
+            'cli_revision': '607341149061e7ac159407dabe01c9fa3c14ee61',
+            'adapter_version': '1', 'raw_artifact_path': 'raw/adradar-snapshot.json',
+        }
+        run.commit(self.root, row)
+        avatar = copy.deepcopy(row)
+        avatar['stage'] = 'avatar-synthesis'
+        avatar['avatars'] = [{'id': 'a', 'buyer': 'CTO', 'trigger': 'Release regression',
+                              'pain': 'Repeated failures', 'offer': 'Diagnostic',
+                              'channels': ['Search'], 'claims': copy.deepcopy(row['claims'])}]
+        avatar['evidence'][0]['provenance']['raw_artifact_path'] = 'raw/different-snapshot.json'
+        with self.assertRaisesRegex(ValueError, 'must match'):
+            run.commit(self.root, avatar)
+
 
 if __name__ == '__main__':
     unittest.main()

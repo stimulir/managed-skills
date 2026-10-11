@@ -76,3 +76,22 @@ vendors' customers, success or fit. Keep connection-check context in generic
 `artifacts` instead of marking a collection stage complete. A provider error or
 missing grant is `blocked`, not `no_data`. Copy complete evidence rows, including
 provenance, unchanged into avatar synthesis.
+
+## AdRadar provenance
+
+For `competitor-ad-research` collected through `adradar_collect`, preserve the
+returned `provider`, `tool`, `cli_revision`, `adapter_version`,
+`playwright_version`, `bundle_sha256`, `page_id` and `country`, together with
+actual request arguments, ad IDs and collection time. Prefer returned durable
+tenant-scoped `artifact_uri` and `snapshot_uri` references. The response's
+`artifact_path` and `snapshot_path` are local sandbox paths; copy their files
+into the final artifact bundle and persist it when durable URIs are unavailable.
+None of these storage references is a public source citation URL. Cite an
+actual returned ad or collection URL. Never synthesize media URLs or ad dates.
+
+Keep local first/last observations separate from publisher start dates. A
+bounded first collection cannot establish historical activity or profitability.
+See the selected competitor-ad skill's `references/adradar.md` for a complete
+normalization example. Connector collection success alone is not a completed
+research stage: normalized evidence and supported claims must still validate.
+Unverified empty scrapes and browser/provider failures remain `blocked`.

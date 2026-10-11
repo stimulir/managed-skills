@@ -23,6 +23,12 @@ Project context and saved keyword lists are supplied/cached material, not indepe
 
 Use discovered keyword research/metrics and SERP tools for search demand; ranked/domain keywords and search competitors can inform comparisons. Use the returned schema for market and language parameters rather than guessing them. Keep keyword volume, traffic estimates, CPC and difficulty separate; do not replace missing values with zero or treat a cached value as current.
 
+## Keyword attribution
+
+A seed requests suggestions; each returned row's metrics belong to that row's keyword. Keep the requested seed and returned keyword distinct in evidence and claims. Report seed volume only from a matching keyword row (ignoring case and surrounding whitespace), with an available volume for the requested market/language. Preserve provider estimates and any close-variant grouping limitations; a matching label does not prove independently measured exact-match demand. Missing rows or missing volumes mean unknown, not zero. A returned numeric zero remains a reported zero.
+
+When the seed has no matching metric, say its volume is unknown and discuss related queries by their own names. Do not call a suggestion's volume "direct-seed demand", infer low seed demand from it, or treat a selected suggestion set as total market demand. For example, a seed of `AI agent infrastructure` returning `ai agent collaboration infrastructure stack` at 10 monthly searches supports that related query's reported volume only; it does not establish the seed's volume. Label interpretations as inferred and keep them within the cited queries, market and source coverage.
+
 ## Artifact contract
 
 Write one JSON object with `schema_version: 1`, `stage: search-demand`, `status: complete|no_data|blocked`, `evidence: []`, and `claims: []`. Each evidence row has `id`, `text`, `kind: observed|inferred|synthetic`, `source_url` (HTTP(S), no credentials), and timezone-aware `retrieved_at`. Each claim has `text`, `kind` and nonempty `evidence_ids`. Claims must reference evidence in this artifact. Use unique stable IDs; preserve imported IDs verbatim. An observed claim requires observed evidence; synthetic sources require synthetic claims. Cite only actually retrieved material. Evidence validation cannot prove a quote is truthful; compare it to its raw source.

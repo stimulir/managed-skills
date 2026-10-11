@@ -11,6 +11,10 @@ Consume committed collection artifacts, preserving evidence records and IDs exac
 
 ## Managed execution
 
+Check the original source context as well as the quoted passage before using community evidence to support a buyer. Preserve buyer, supplier, job-seeker, mixed and unknown participant roles. An adjacent-domain question does not establish demand in the target product's domain. Exclude unrelated sources from buyer support instead of forcing a requested avatar count. Distinct buying situations within the same role are valid hypotheses, but label that shared role rather than presenting them as independently validated market segments.
+
+Offers and channels are proposed tests unless their exact features, terms or usage are supported. Attribute competitor-written contract or pricing statements as third-party claims; never present them as verified current owner terms. With blocked ad research, Meta/Reddit ads may be explicitly proposed untested channels, but do not claim competitors operate there from an unrelated page ad, query match or an empty collection. Keep recommendations separate from source observations.
+
 This package uses environment-bound credentials and no human CLI session. It is usable alone with supplied evidence. For live collection in the six-stage deployment, explicitly select `audience-research` plus all six stage skills; selecting this skill never imports siblings automatically. Use the coordinator's bounded Treg helper only when that package is installed and deployment policy authorizes the endpoint and spend. Read raw provider responses before normalizing: HTTP success does not prove provider success. No direct OpenSEO API integration is implied.
 
 ## Artifact contract

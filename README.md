@@ -19,7 +19,7 @@ promotion workflows, use the separate
 | [`audience-research`](./skills/audience-research/) | Coordinate six evidence-backed audience research stages with budgeted collection and checkpoints. | `TREG_TOKEN` for Treg; attached OpenSEO connector optional |
 | [`vendor-research`](./skills/vendor-research/) | Identify comparable vendors and buyer situations. | OpenSEO connector, coordinator or supplied evidence |
 | [`search-demand`](./skills/search-demand/) | Analyse search intent and buyer language. | OpenSEO connector, coordinator or supplied evidence |
-| [`competitor-ad-research`](./skills/competitor-ad-research/) | Analyse competitor creative, offers and landing pages. | Via coordinator |
+| [`competitor-ad-research`](./skills/competitor-ad-research/) | Analyse competitor creative, offers and landing pages. | AdRadar connector, coordinator or supplied evidence |
 | [`creator-community-research`](./skills/creator-community-research/) | Map relevant creators, communities and recurring questions. | Via coordinator |
 | [`avatar-synthesis`](./skills/avatar-synthesis/) | Build testable buyer profiles from cited evidence. | None |
 | [`experiment-feedback`](./skills/experiment-feedback/) | Validate profiles against owned experiment outcomes. | Via coordinator or supplied outcomes |
@@ -39,9 +39,17 @@ Offline verification: `python3 -m unittest discover -s tests -v`.
 
 ## Import into a Stimulir workspace
 
-In the Console, discover this repository and import only the skills the
-workspace needs. The import is pinned to a resolved commit, and each managed
-run materializes the selected package into the workspace sandbox.
+With Console capability controls, a platform administrator opens **Overlord →
+Integrations → Client access**, selects the client, discovers this repository, reviews the
+managed packages and imports only the selected skills. Discovery returns the
+resolved commit; import pins each selected package to that commit. Client
+builders show only enabled, installed skills. Enabling a skill does not attach
+it to an agent: the client selects it and saves a new immutable agent version.
+
+The operator CLI can discover already-enabled packages. Its legacy import path
+requires platform administrator access and an existing capability grant; use
+Overlord for initial review/import. Each managed run materializes only the
+selected frozen packages into the workspace sandbox.
 
 ```bash
 stimulir skills discover stimulir/managed-skills --ref main
@@ -57,6 +65,11 @@ read the bound environment variable (`SERPER_API_KEY` / `TREG_TOKEN`); connector
 credentials stay on the backend. Never print credential values.
 
 ### OpenSEO in Agent Builder
+
+An administrator first enables **OpenSEO** for the client in **Overlord →
+Integrations → Client access**. Clients without that grant do not see the connector in their
+builder. Disabling it blocks new runs/chats and subsequent connector calls;
+existing version snapshots are retained.
 
 Save an OpenSEO API key in the intended project's organization Vault, commonly
 as `OPENSEO_API_KEY`. Add the **OpenSEO** connector block in the new Agent Builder,
@@ -80,6 +93,34 @@ not update existing imports or deployed versions: re-import/update the affected
 skills at the reviewed commit, then save and publish a new agent version.
 
 Reference: [OpenSEO MCP documentation](https://openseo.so/docs/mcp).
+
+### AdRadar in Agent Builder
+
+AdRadar is a CLI-backed connector rather than an MCP service. An administrator
+enables **AdRadar** for the client in **Overlord → Integrations → Client access**,
+and enables/imports **competitor-ad-research** from a reviewed managed-skills
+commit. The client attaches the connector and skill in Agent Builder, selects
+the collection tool, then saves and publishes a new agent version. Client
+availability, installed runtime dependencies and agent attachment are separate.
+Disabling the connector blocks subsequent collection even for a saved version;
+it does not erase that version's snapshot.
+
+The runtime provides `adradar_collect` for public Meta Ad Library observations.
+It accepts a verified numeric advertiser `page_id`, country code or `ALL`, and
+bounded `max_scrolls`. No public-scraper API key is needed in Vault. The runtime
+owns the pinned CLI/browser installation and emits revision/browser/hash
+provenance plus local normalized-result and raw-snapshot paths. Host persistence
+returns tenant-scoped durable artifact/snapshot URIs; local sandbox paths must
+be copied into persisted task artifacts if those URIs are unavailable.
+The skill interprets creative evidence and cites actual
+sources; it does not install the CLI or send Slack/Discord notifications.
+Browser challenges, denied grants and uncertain empty scrapes are blocked
+collection, not successful empty research. Longevity is not proof of profitable
+ads. Supplied-evidence-only runs make no connector calls.
+
+Older deployments without the connector continue to use supplied evidence or
+their separately authorized coordinator sources. Refreshing an imported skill
+does not change existing agent versions: save a reviewed version to adopt it.
 
 ## Install in a coding agent
 

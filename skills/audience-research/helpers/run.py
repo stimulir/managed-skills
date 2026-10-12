@@ -21,6 +21,9 @@ from urllib.parse import urlencode
 from urllib.request import Request
 from evidence import STAGES, validate
 
+RAW_EXPORT_LIMIT = 1_500_000
+OUTPUT_EXPORT_LIMIT = 2_000_000
+
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -179,18 +182,25 @@ def collect(root: Path, endpoint: str, query: dict, max_cost_micro: int) -> dict
         cost = headers.get('x-treg-cost-micro')
         if cost is None or not cost.isdigit() or int(cost) > max_cost_micro:
             raise ValueError('missing or unexpected cost receipt; reservation retained for reconciliation')
-        receipt = {'endpoint': endpoint, 'request_fingerprint': fingerprint, 'fetched_at': now(),
+        receipt = {'endpoint': endpoint, 'query': query, 'request_fingerprint': fingerprint, 'fetched_at': now(),
                    'call_id': headers.get('x-treg-call-id'), 'cost_micro_usd': int(cost),
                    'status': 'unvalidated', 'data': data}
+        # These gateway freshness hints are separate from our response receipt
+        # clock; none proves when a provider's underlying content was updated.
+        receipt['gateway_cache_headers'] = {
+            name: headers[name] for name in ('x-treg-cache', 'x-treg-fetched-at', 'x-treg-age')
+            if name in headers
+        }
         relative = f'raw/{fingerprint}.json'
         atomic_json(root / relative, receipt)
         # Raw provider data is never automatically promoted into observations.
-        entry.update(status='complete', path=relative, cost_micro_usd=int(cost))
+        entry.update(status='complete', path=relative, cost_micro_usd=int(cost),
+                     raw_response_fingerprint=digest(receipt))
         atomic_json(root / 'run.json', state)
         return receipt
 
 
-def export(root: Path) -> dict:
+def export(root: Path, include_raw: bool = False) -> dict:
     with locked(root):
         state = read_state(root)
         rows, avatars, stages, missing, documents = {}, [], [], [], {}
@@ -227,6 +237,32 @@ def export(root: Path) -> dict:
                   'summary': 'Research requires inputs' if missing else 'Six research stages completed',
                   'artifacts': {'stage_count': len(documents)},
                   'checkpoints': {'manifest': state, 'stage_artifacts': documents, 'call_receipts': receipts}}
+        if include_raw:
+            raw_responses = {}
+            for key, entry in state['calls'].items():
+                if entry['status'] != 'complete':
+                    continue
+                path = (root / entry['path']).resolve()
+                if not path.is_relative_to((root / 'raw').resolve()):
+                    raise ValueError('raw receipt must remain inside the run raw directory')
+                raw = json.loads(path.read_text())
+                if (not isinstance(raw, dict) or raw.get('request_fingerprint') != key
+                        or raw.get('endpoint') != entry['endpoint']
+                        or raw.get('cost_micro_usd') != entry['cost_micro_usd']
+                        or not isinstance(raw.get('query'), dict)
+                        or digest({'endpoint': raw['endpoint'], 'query': raw['query']}) != key):
+                    raise ValueError('raw receipt identity differs from checkpoint')
+                saved_fingerprint = entry.get('raw_response_fingerprint')
+                if saved_fingerprint is None:
+                    raise ValueError('raw receipt lacks a saved fingerprint; persist legacy raw files separately')
+                if digest(raw) != saved_fingerprint:
+                    raise ValueError('raw receipt changed after collection')
+                raw_responses[key] = raw
+            if len(json.dumps(raw_responses, indent=2, allow_nan=False).encode()) > RAW_EXPORT_LIMIT:
+                raise ValueError('raw response bundle exceeds 1500000 bytes; persist raw files separately')
+            output['checkpoints']['raw_responses'] = raw_responses
+            if len(json.dumps(output, indent=2, allow_nan=False).encode()) > OUTPUT_EXPORT_LIMIT:
+                raise ValueError('output bundle exceeds 2000000 bytes; persist raw files separately')
         atomic_json(root / 'output.json', output)
         return output
 
@@ -239,7 +275,9 @@ def main() -> None:
     start.add_argument('--run-id', required=True)
     start.add_argument('--policy', type=Path, required=True)
     sub.add_parser('status')
-    sub.add_parser('export')
+    finish = sub.add_parser('export')
+    finish.add_argument('--include-raw', action='store_true',
+                        help='Embed verified Treg receipts within bounded runtime output limits')
     save = sub.add_parser('commit')
     save.add_argument('artifact', type=Path)
     access = sub.add_parser('catalog')
@@ -255,7 +293,7 @@ def main() -> None:
         elif args.command == 'status':
             result = read_state(args.run_dir)
         elif args.command == 'export':
-            result = export(args.run_dir)
+            result = export(args.run_dir, include_raw=args.include_raw)
         elif args.command == 'commit':
             result = commit(args.run_dir, json.loads(args.artifact.read_text()))
         elif args.command == 'catalog':

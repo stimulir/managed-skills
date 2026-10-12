@@ -150,6 +150,79 @@ class RunTests(unittest.TestCase):
                 run.collect(self.root, 'example.read', {}, 101)
             request.assert_not_called()
 
+    def test_raw_export_preserves_body_and_separate_receipt_clocks(self):
+        data = {'results': [{'url': 'https://example.com/community',
+                             'body': 'A public question about creator briefs.',
+                             'published_at': '2025-01-01T12:00:00Z'}]}
+        headers = {'x-treg-cost-micro': '0', 'x-treg-call-id': 'receipt',
+                   'x-treg-cache': 'hit', 'x-treg-fetched-at': '2026-10-10T08:00:00Z',
+                   'x-treg-age': '86400', 'authorization': 'do-not-persist'}
+        with patch.object(run, 'request_json', return_value=(data, headers)), \
+                patch.object(run, 'now', return_value='2026-10-11T08:00:00+00:00'):
+            receipt = run.collect(self.root, 'example.read', {'fetch': '{}'}, 0)
+        output = run.export(self.root, include_raw=True)
+        embedded = next(iter(output['checkpoints']['raw_responses'].values()))
+        self.assertEqual(embedded, receipt)
+        self.assertEqual(embedded['data'], data)
+        self.assertEqual(embedded['query'], {'fetch': '{}'})
+        self.assertEqual(embedded['fetched_at'], '2026-10-11T08:00:00+00:00')
+        self.assertEqual(embedded['gateway_cache_headers'], {
+            'x-treg-cache': 'hit', 'x-treg-fetched-at': '2026-10-10T08:00:00Z',
+            'x-treg-age': '86400'})
+        self.assertNotIn('do-not-persist', json.dumps(output))
+        self.assertNotIn('raw_responses', run.export(self.root)['checkpoints'])
+
+    def test_raw_export_rejects_modified_body_and_legacy_receipt(self):
+        with patch.object(run, 'request_json', return_value=({'body': 'original'}, {'x-treg-cost-micro': '0'})):
+            receipt = run.collect(self.root, 'example.read', {}, 0)
+        key = receipt['request_fingerprint']
+        state = run.read_state(self.root)
+        path = self.root / state['calls'][key]['path']
+        altered = copy.deepcopy(receipt); altered['data']['body'] = 'changed'
+        run.atomic_json(path, altered)
+        with self.assertRaisesRegex(ValueError, 'changed after collection'):
+            run.export(self.root, include_raw=True)
+        run.atomic_json(path, receipt)
+        del state['calls'][key]['raw_response_fingerprint']
+        run.atomic_json(self.root / 'run.json', state)
+        with self.assertRaisesRegex(ValueError, 'legacy raw files'):
+            run.export(self.root, include_raw=True)
+        self.assertEqual(run.export(self.root)['status'], 'needs_input')
+
+    def test_raw_export_rejects_wrong_identity_and_external_path(self):
+        with patch.object(run, 'request_json', return_value=({}, {'x-treg-cost-micro': '0'})):
+            receipt = run.collect(self.root, 'example.read', {}, 0)
+        state = run.read_state(self.root)
+        key = receipt['request_fingerprint']
+        path = self.root / state['calls'][key]['path']
+        altered = copy.deepcopy(receipt); altered['endpoint'] = 'different.read'
+        run.atomic_json(path, altered)
+        with self.assertRaisesRegex(ValueError, 'identity differs'):
+            run.export(self.root, include_raw=True)
+        altered = copy.deepcopy(receipt); altered['query'] = {'q': 'different public search'}
+        run.atomic_json(path, altered)
+        # Even updating the saved body hash cannot replace the request identity.
+        state['calls'][key]['raw_response_fingerprint'] = run.digest(altered)
+        run.atomic_json(self.root / 'run.json', state)
+        with self.assertRaisesRegex(ValueError, 'identity differs'):
+            run.export(self.root, include_raw=True)
+        state['calls'][key]['path'] = 'artifacts/not-a-raw-receipt.json'
+        run.atomic_json(self.root / 'run.json', state)
+        with self.assertRaisesRegex(ValueError, 'inside the run raw directory'):
+            run.export(self.root, include_raw=True)
+
+    def test_raw_export_size_limits_fail_without_partial_output(self):
+        with patch.object(run, 'request_json', return_value=({'body': 'source text'}, {'x-treg-cost-micro': '0'})):
+            run.collect(self.root, 'example.read', {}, 0)
+        baseline = run.export(self.root)
+        saved = (self.root / 'output.json').read_text()
+        for limit in ('RAW_EXPORT_LIMIT', 'OUTPUT_EXPORT_LIMIT'):
+            with self.subTest(limit=limit), patch.object(run, limit, 1):
+                with self.assertRaisesRegex(ValueError, 'exceeds'):
+                    run.export(self.root, include_raw=True)
+                self.assertEqual((self.root / 'output.json').read_text(), saved)
+        self.assertEqual(baseline['status'], 'needs_input')
+
     def test_allowlist_refused_before_network(self):
         with patch.object(run, 'request_json') as request:
             with self.assertRaisesRegex(ValueError, 'allowlist'):
@@ -227,6 +300,47 @@ class RunTests(unittest.TestCase):
         self.assertEqual(output['status'], 'completed')
         self.assertEqual(len(output['checkpoints']['stage_artifacts']), 6)
         self.assertEqual(output['missing_inputs'], [])
+
+    def test_adradar_checkpoint_preserves_unknowns_and_runtime_provenance(self):
+        row = artifact('competitor-ad-research')
+        observation = row['evidence'][0]
+        observation['source_url'] = 'https://www.facebook.com/ads/library/?id=123456789'
+        observation['provenance'] = {
+            'provider': 'adradar', 'tool': 'adradar_collect',
+            'cli_revision': '607341149061e7ac159407dabe01c9fa3c14ee61',
+            'adapter_version': '1', 'page_id': '987654321', 'country': 'GB',
+            'playwright_version': '1.61.0', 'bundle_sha256': 'a' * 64,
+            'request_arguments': {'page_id': '987654321', 'country': 'GB', 'max_scrolls': 3},
+            'artifact_uri': '/api/v1/compute/agents/connector-artifacts/00000000-0000-4000-8000-000000000001',
+            'snapshot_uri': '/api/v1/compute/agents/connector-artifacts/00000000-0000-4000-8000-000000000001?raw=true',
+            'first_seen': '2026-10-11T12:00:00+00:00',
+            'last_seen': '2026-10-11T12:00:00+00:00',
+            'publisher_start_date': None, 'impressions': None, 'roas': None,
+        }
+        run.commit(self.root, row)
+        exported = run.export(self.root)
+        stage = next(item for item in exported['stages'] if item['stage'] == 'competitor-ad-research')
+        persisted = json.loads((self.root / stage['artifact_path']).read_text())
+        self.assertEqual(persisted['evidence'][0], observation)
+        self.assertEqual(exported['evidence'], row['evidence'])
+        self.assertEqual(exported['status'], 'needs_input')
+
+    def test_avatar_cannot_change_adradar_snapshot_provenance(self):
+        row = artifact('competitor-ad-research')
+        row['evidence'][0]['provenance'] = {
+            'provider': 'adradar', 'tool': 'adradar_collect',
+            'cli_revision': '607341149061e7ac159407dabe01c9fa3c14ee61',
+            'adapter_version': '1', 'raw_artifact_path': 'raw/adradar-snapshot.json',
+        }
+        run.commit(self.root, row)
+        avatar = copy.deepcopy(row)
+        avatar['stage'] = 'avatar-synthesis'
+        avatar['avatars'] = [{'id': 'a', 'buyer': 'CTO', 'trigger': 'Release regression',
+                              'pain': 'Repeated failures', 'offer': 'Diagnostic',
+                              'channels': ['Search'], 'claims': copy.deepcopy(row['claims'])}]
+        avatar['evidence'][0]['provenance']['raw_artifact_path'] = 'raw/different-snapshot.json'
+        with self.assertRaisesRegex(ValueError, 'must match'):
+            run.commit(self.root, avatar)
 
 
 if __name__ == '__main__':

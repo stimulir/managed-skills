@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analytics Dashboard"
+  short_description: "Build a dashboard from inspected data"
+  default_prompt: "Use $analytics-dashboard to design a sourced dashboard for this metric."

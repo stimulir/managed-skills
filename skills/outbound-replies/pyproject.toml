@@ -1,0 +1,6 @@
+[project]
+name = "outbound-replies"
+version = "0.1.0"
+description = "Grounded outbound reply drafting with Stimulir models."
+requires-python = ">=3.11"
+dependencies = []

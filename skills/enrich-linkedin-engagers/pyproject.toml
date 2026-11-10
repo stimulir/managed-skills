@@ -1,0 +1,6 @@
+[project]
+name = "enrich-linkedin-engagers"
+version = "0.1.0"
+description = "Traceable LinkedIn engagement normalization and authorized enrichment."
+requires-python = ">=3.11"
+dependencies = []

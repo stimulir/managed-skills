@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinkedIn Engagers"
+  short_description: "Normalize and enrich authorized engagement data"
+  default_prompt: "Use $enrich-linkedin-engagers to process this LinkedIn engagement source."

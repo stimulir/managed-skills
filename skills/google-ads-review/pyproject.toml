@@ -1,0 +1,6 @@
+[project]
+name = "google-ads-review"
+version = "0.1.0"
+description = "Evidence-backed Google Ads account review."
+requires-python = ">=3.11"
+dependencies = []

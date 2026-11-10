@@ -1,0 +1,6 @@
+[project]
+name = "seo-content"
+version = "0.1.0"
+description = "Sourced SEO research and drafting with Stimulir models."
+requires-python = ">=3.11"
+dependencies = []

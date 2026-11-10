@@ -1,0 +1,6 @@
+[project]
+name = "analytics-dashboard"
+version = "0.1.0"
+description = "Build sourced analytics dashboards in a Stimulir managed sandbox."
+requires-python = ">=3.11"
+dependencies = []

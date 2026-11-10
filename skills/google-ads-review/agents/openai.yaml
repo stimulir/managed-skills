@@ -1,0 +1,4 @@
+interface:
+  display_name: "Google Ads Review"
+  short_description: "Review account data and recommend changes"
+  default_prompt: "Use $google-ads-review to review this account and propose changes."

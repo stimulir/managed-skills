@@ -1,0 +1,4 @@
+interface:
+  display_name: "Outbound Replies"
+  short_description: "Draft replies to campaign conversations"
+  default_prompt: "Use $outbound-replies to draft a reply to this conversation."

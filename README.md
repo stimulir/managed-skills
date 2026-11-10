@@ -23,6 +23,22 @@ promotion workflows, use the separate
 | [`creator-community-research`](./skills/creator-community-research/) | Map relevant creators, communities and recurring questions. | Via coordinator |
 | [`avatar-synthesis`](./skills/avatar-synthesis/) | Build testable buyer profiles from cited evidence. | None |
 | [`experiment-feedback`](./skills/experiment-feedback/) | Validate profiles against owned experiment outcomes. | Via coordinator or supplied outcomes |
+| [`analytics-dashboard`](./skills/analytics-dashboard/) | Build a sourced dashboard from inspected schema and authorized read-only data. | Metricool/OpenSEO MCP, another granted data tool, or supplied export |
+| [`enrich-linkedin-engagers`](./skills/enrich-linkedin-engagers/) | Collect visible engagers with an authorized browser or normalize an export, then optionally enrich and verify. | Harness browser or configured browser-use; optional Apollo and verification tools |
+| [`seo-content`](./skills/seo-content/) | Research search demand and prepare sourced article drafts with Stimulir models. | OpenSEO MCP; optional Serper and browser inspection |
+| [`google-ads-review`](./skills/google-ads-review/) | Review existing Ads evidence and propose account changes. | Metricool MCP, Ads connector, or export; optional OpenSEO context |
+| [`outbound-replies`](./skills/outbound-replies/) | Draft grounded replies for existing campaign conversations with Stimulir models. | Granted Apollo and Gmail tools, or supplied thread |
+
+### Marketing skill harness prerequisites
+
+These five packages are workflow instructions, not bundled provider adapters. A skill can use only the tools actually exposed to its run:
+
+- **SEO:** Stimulir Agent Builder already supports an OpenSEO connector. Attach it, select the correct OpenSEO project, and grant the needed tools. Serper is available only through a selected research package with `SERPER_API_KEY` bound.
+- **Ads and analytics:** Metricool is a possible MCP data source for connected Ads and social accounts. It must be attached and granted to the target harness (for example through a reviewed custom MCP connection), or its data must be supplied as an export. This repository does not itself connect Metricool or establish which account metrics the grant exposes.
+- **Replies and enrichment:** Apollo tools can supply campaign/contact evidence and email matching when attached to the harness. Gmail needs its own granted mailbox connection for current threads, drafts or sending. Tools available in a Codex session do not automatically become available to a Stimulir managed run.
+- **Browsing:** Use the harness's native browser, including Codex browsing, when available. In a sandbox without native browsing, use a configured browser-use agent with Chromium and a verified model connection. The existing `web-scrape` helper extracts page text; it cannot by itself open LinkedIn comment and reaction panels.
+
+The skills stop at `needs_input` or `blocked` when required grants or evidence are absent. These routes are not live-verified by this repository; validate each connected account and run before enabling an agent version. Installed skills remain commit-pinned until re-imported and republished in the agent version.
 
 `scenario-simulate` is synthetic by construction. Its output must never be
 presented as observed population measurement.

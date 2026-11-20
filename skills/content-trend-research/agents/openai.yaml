@@ -1,0 +1,4 @@
+interface:
+  display_name: "Content Trend Research"
+  short_description: "Track relevant posts and evidence-backed momentum"
+  default_prompt: "Use $content-trend-research to discover relevant performing posts through Treg and update our campaign's trend shortlist from dated evidence."

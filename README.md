@@ -21,6 +21,7 @@ promotion workflows, use the separate
 | [`search-demand`](./skills/search-demand/) | Analyse search intent and buyer language. | OpenSEO connector, coordinator or supplied evidence |
 | [`competitor-ad-research`](./skills/competitor-ad-research/) | Analyse competitor creative, offers and landing pages. | AdRadar connector, coordinator or supplied evidence |
 | [`creator-community-research`](./skills/creator-community-research/) | Map relevant creators, communities and recurring questions. | Via coordinator |
+| [`content-trend-research`](./skills/content-trend-research/) | Discover performing posts through Treg and track dated momentum against a campaign goal. | Granted Treg tools/reviewed adapter with `TREG_TOKEN`, or supplied evidence |
 | [`avatar-synthesis`](./skills/avatar-synthesis/) | Build testable buyer profiles from cited evidence. | None |
 | [`experiment-feedback`](./skills/experiment-feedback/) | Validate profiles against owned experiment outcomes. | Via coordinator or supplied outcomes |
 | [`analytics-dashboard`](./skills/analytics-dashboard/) | Build a sourced dashboard from inspected schema and authorized read-only data. | Metricool/OpenSEO MCP, another granted data tool, or supplied export |

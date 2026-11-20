@@ -1,0 +1,6 @@
+[project]
+name = "content-trend-research"
+version = "0.1.0"
+description = "Treg-first discovery and longitudinal evidence for performing content."
+requires-python = ">=3.11"
+dependencies = []
